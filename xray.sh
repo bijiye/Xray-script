@@ -119,7 +119,7 @@ normalizeVersion() {
 	if [ -n "$1" ]; then
 		case "$1" in
 			v*) echo "$1" ;;
-			http*) echo "v1.4.2" ;;
+			http*) echo "v1.5.3" ;;
 			*) echo "v$1" ;;
 		esac
 	else
@@ -132,7 +132,7 @@ getVersion() {
 	VER=$(/usr/local/bin/xray version | head -n1 | awk '{print $2}')
 	RETVAL=$?
 	CUR_VER="$(normalizeVersion "$(echo "$VER" | head -n 1 | cut -d " " -f2)")"
-	TAG_URL="${V6_PROXY}https://api.github.com/repos/XTLS/Xray-core/releases/latest"
+	TAG_URL="https://api.github.com/repos/XTLS/Xray-core/releases/latest"
 	NEW_VER="$(normalizeVersion "$(curl -s "${TAG_URL}" --connect-timeout 10 | grep 'tag_name' | cut -d\" -f4)")"
 
 	if [[ $? -ne 0 ]] || [[ $NEW_VER == "" ]]; then
@@ -735,7 +735,7 @@ installXray() {
 	cat >/etc/systemd/system/xray.service <<-EOF
 		[Unit]
 		Description=Xray Service
-		Documentation=https://github.com/xtls https://hijk.art
+		Documentation=https://github.com/xtls
 		After=network.target nss-lookup.target
 		
 		[Service]
@@ -1252,7 +1252,6 @@ configXray() {
 
 install() {
 	getData
-
 	$PMT clean all
 	[[ "$PMT" == "apt" ]] && $PMT update
 	#echo $CMD_UPGRADE | bash
@@ -1310,11 +1309,7 @@ bbrReboot() {
 
 update() {
 	res=$(status)
-	if [[ $res -lt 2 ]]; then
-		colorEcho $RED " Xray未安装，请先安装！"
-		return
-	fi
-
+	[[ $res -lt 2 ]] && colorEcho $RED " Xray未安装，请先安装！" && return
 	getVersion
 	RETVAL="$?"
 	if [[ $RETVAL == 0 ]]; then
@@ -1326,7 +1321,6 @@ update() {
 		installXray
 		stop
 		start
-
 		colorEcho $GREEN " 最新版Xray安装成功！"
 	fi
 }
