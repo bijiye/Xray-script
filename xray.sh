@@ -241,24 +241,12 @@ getData() {
 		echo "   6) wiregard"
 		read -p "  请选择伪装类型[默认：无]：" answer
 		case $answer in
-		2)
-			HEADER_TYPE="utp"
-			;;
-		3)
-			HEADER_TYPE="srtp"
-			;;
-		4)
-			HEADER_TYPE="wechat-video"
-			;;
-		5)
-			HEADER_TYPE="dtls"
-			;;
-		6)
-			HEADER_TYPE="wireguard"
-			;;
-		*)
-			HEADER_TYPE="none"
-			;;
+			2) HEADER_TYPE="utp" ;;
+			3) HEADER_TYPE="srtp" ;;
+			4) HEADER_TYPE="wechat-video" ;;
+			5) HEADER_TYPE="dtls" ;;
+			6) HEADER_TYPE="wireguard" ;;
+			*) HEADER_TYPE="none" ;;
 		esac
 		colorEcho $BLUE " 伪装类型：$HEADER_TYPE"
 		SEED=$(cat /proc/sys/kernel/random/uuid)
@@ -279,16 +267,9 @@ getData() {
 		read -p "  请选择流控模式[默认:direct]" answer
 		[[ -z "$answer" ]] && answer=1
 		case $answer in
-		1)
-			FLOW="xtls-rprx-direct"
-			;;
-		2)
-			FLOW="xtls-rprx-origin"
-			;;
-		*)
-			colorEcho $RED " 无效选项，使用默认的xtls-rprx-direct"
-			FLOW="xtls-rprx-direct"
-			;;
+			1) FLOW="xtls-rprx-direct" ;;
+			2) FLOW="xtls-rprx-origin" ;;
+			*) colorEcho $RED " 无效选项，使用默认的xtls-rprx-direct" && FLOW="xtls-rprx-direct" ;;
 		esac
 		colorEcho $BLUE " 流控模式：$FLOW"
 	fi
@@ -326,44 +307,38 @@ getData() {
 			PROXY_URL="https://bing.imeizi.me"
 		else
 			case $answer in
-			1)
-				PROXY_URL=""
-				;;
-			2)
-				len=${#SITES[@]}
-				((len--))
-				while true; do
-					index=$(shuf -i0-${len} -n1)
-					PROXY_URL=${SITES[$index]}
-					host=$(echo ${PROXY_URL} | cut -d/ -f3)
-					ip=$(curl -sL https://hijk.art/hostip.php?d=${host})
-					res=$(echo -n ${ip} | grep ${host})
-					if [[ "${res}" == "" ]]; then
-						echo "$ip $host" >>/etc/hosts
-						break
+				1) PROXY_URL="" ;;
+				2)
+					len=${#SITES[@]}
+					((len--))
+					while true; do
+						index=$(shuf -i0-${len} -n1)
+						PROXY_URL=${SITES[$index]}
+						host=$(echo ${PROXY_URL} | cut -d/ -f3)
+						ip=$(curl -sL https://hijk.art/hostip.php?d=${host})
+						res=$(echo -n ${ip} | grep ${host})
+						if [[ "${res}" == "" ]]; then
+							echo "$ip $host" >>/etc/hosts
+							break
+						fi
+					done
+					;;
+				3) PROXY_URL="https://imeizi.me" ;;
+				4) PROXY_URL="https://bing.imeizi.me" ;;
+				5)
+					read -p " 请输入反代站点(以http或者https开头)：" PROXY_URL
+					if [[ -z "$PROXY_URL" ]]; then
+						colorEcho $RED " 请输入反代网站！"
+						exit 1
+					elif [[ "${PROXY_URL:0:4}" != "http" ]]; then
+						colorEcho $RED " 反代网站必须以http或https开头！"
+						exit 1
 					fi
-				done
-				;;
-			3)
-				PROXY_URL="https://imeizi.me"
-				;;
-			4)
-				PROXY_URL="https://bing.imeizi.me"
-				;;
-			5)
-				read -p " 请输入反代站点(以http或者https开头)：" PROXY_URL
-				if [[ -z "$PROXY_URL" ]]; then
-					colorEcho $RED " 请输入反代网站！"
+					;;
+				*)
+					colorEcho $RED " 请输入正确的选项！"
 					exit 1
-				elif [[ "${PROXY_URL:0:4}" != "http" ]]; then
-					colorEcho $RED " 反代网站必须以http或https开头！"
-					exit 1
-				fi
-				;;
-			*)
-				colorEcho $RED " 请输入正确的选项！"
-				exit 1
-				;;
+					;;
 			esac
 		fi
 		REMOTE_HOST=$(echo ${PROXY_URL} | cut -d/ -f3)
