@@ -26,6 +26,10 @@ SITES=(
 CONFIG_FILE="/usr/local/etc/xray/config.json"
 OS=$(hostnamectl | grep -i system | cut -d: -f2)
 
+checkwarp(){
+	[[ -n $(wg 2>/dev/null) ]] && echo " 检测到WARP已打开，脚本中断运行" && exit 1
+}
+
 V6_PROXY=""
 IP=$(curl -sL -4 ip.gs)
 [[ "$?" != "0" ]] && IP=$(curl -sL -6 ip.gs) && V6_PROXY="https://gh-proxy-misakano7545.koyeb.app/"
@@ -202,7 +206,7 @@ getData() {
 			res=$(echo -n ${resolve} | grep ${IP})
 			if [[ -z "${res}" ]]; then
 				colorEcho ${BLUE} "${DOMAIN} 解析结果：${resolve}"
-				colorEcho ${RED} " 域名未解析到当前服务器IP(${IP})!"
+				colorEcho ${RED} " 域名未解析到当前服务器IP(${IP})！"
 				exit 1
 			fi
 		fi
@@ -299,9 +303,8 @@ getData() {
 		colorEcho $BLUE " 请选择伪装站类型:"
 		echo "   1) 静态网站(位于/usr/share/nginx/html)"
 		echo "   2) 小说站(随机选择)"
-		echo "   3) 美女站(https://imeizi.me)"
-		echo "   4) 高清壁纸站(https://bing.ioliu.cn)"
-		echo "   5) 自定义反代站点(需以http或者https开头)"
+		echo "   3) 高清壁纸站(https://bing.ioliu.cn)"
+		echo "   4) 自定义反代站点(需以http或者https开头)"
 		read -p "  请选择伪装网站类型[默认:高清壁纸站]" answer
 		if [[ -z "$answer" ]]; then
 			PROXY_URL="https://bing.ioliu.cn"
@@ -323,9 +326,8 @@ getData() {
 						fi
 					done
 					;;
-				3) PROXY_URL="https://imeizi.me" ;;
-				4) PROXY_URL="https://bing.ioliu.cn" ;;
-				5)
+				3) PROXY_URL="https://bing.ioliu.cn" ;;
+				4)
 					read -p " 请输入反代站点(以http或者https开头)：" PROXY_URL
 					if [[ -z "$PROXY_URL" ]]; then
 						colorEcho $RED " 请输入反代网站！"
@@ -335,10 +337,7 @@ getData() {
 						exit 1
 					fi
 					;;
-				*)
-					colorEcho $RED " 请输入正确的选项！"
-					exit 1
-					;;
+				*) colorEcho $RED " 请输入正确的选项！" && exit 1 ;;
 			esac
 		fi
 		REMOTE_HOST=$(echo ${PROXY_URL} | cut -d/ -f3)
@@ -1677,8 +1676,8 @@ menu() {
 	echo -e "  ${GREEN}6.${PLAIN}   安装Xray-VLESS+TCP+TLS"
 	echo -e "  ${GREEN}7.${PLAIN}   安装Xray-${BLUE}VLESS+WS+TLS${PLAIN}${RED}(可过cdn)${PLAIN}"
 	echo -e "  ${GREEN}8.${PLAIN}   安装Xray-${BLUE}VLESS+TCP+XTLS${PLAIN}${RED}(推荐)${PLAIN}"
-	echo -e "  ${GREEN}9.${PLAIN}   安装${BLUE}trojan${PLAIN}${RED}(推荐)${PLAIN}"
-	echo -e "  ${GREEN}10.${PLAIN}  安装${BLUE}trojan+XTLS${PLAIN}${RED}(推荐)${PLAIN}"
+	echo -e "  ${GREEN}9.${PLAIN}   安装${BLUE}Trojan${PLAIN}${RED}(推荐)${PLAIN}"
+	echo -e "  ${GREEN}10.${PLAIN}  安装${BLUE}Trojan+XTLS${PLAIN}${RED}(推荐)${PLAIN}"
 	echo " -------------"
 	echo -e "  ${GREEN}11.${PLAIN}  更新Xray"
 	echo -e "  ${GREEN}12.  ${RED}卸载Xray${PLAIN}"
@@ -1720,6 +1719,7 @@ menu() {
 }
 
 checkSystem
+checkwarp
 
 action=$1
 [[ -z $1 ]] && action=menu
