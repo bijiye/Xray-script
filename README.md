@@ -10,7 +10,7 @@ wget https://cdn.jsdelivr.net/gh/Misaka-blog/Xray-script@master/xray.sh && bash 
 
 ## 鸣谢
 
-感谢网络跳越提供的源及开放许可
+感谢网络跳越提供的源码及开放许可
 
 ## 交流
 
