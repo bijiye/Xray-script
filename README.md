@@ -21,7 +21,7 @@ wget -N https://cdn.jsdelivr.net/gh/Misaka-blog/Xray-script@master/xray.sh && ba
 * Xray-VLESS+WS+TLS(可过cdn)
 * Xray-VLESS+TCP+XTLS(推荐)
 * Trojan(推荐)
-* trojan+XTLS(推荐)
+* Trojan+XTLS(推荐)
 
 ## 鸣谢
 
