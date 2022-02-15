@@ -184,7 +184,6 @@ getData() {
 		echo " "
 		read -p " 确认满足按y，按其他退出脚本：" answer
 		[[ "${answer,,}" != "y" ]] && exit 1
-
 		echo ""
 		while true; do
 			read -p " 请输入伪装域名：" DOMAIN
@@ -196,14 +195,13 @@ getData() {
 		done
 		DOMAIN=${DOMAIN,,}
 		colorEcho ${BLUE} " 伪装域名(host)：$DOMAIN"
-
 		echo ""
 		if [[ -f ~/xray.pem && -f ~/xray.key ]]; then
 			colorEcho ${BLUE} " 检测到自有证书，将使用其部署"
 			CERT_FILE="/usr/local/etc/xray/${DOMAIN}.pem"
 			KEY_FILE="/usr/local/etc/xray/${DOMAIN}.key"
 		else
-			resolve=$(curl -sm2 ipget.net/?ip=${DOMAIN})
+			resolve=$(curl -sm8 ipget.net/?ip=${DOMAIN})
 			res=$(echo -n ${resolve} | grep ${IP})
 			if [[ -z "${res}" ]]; then
 				colorEcho ${BLUE} "${DOMAIN} 解析结果：${resolve}"
@@ -212,7 +210,6 @@ getData() {
 			fi
 		fi
 	fi
-
 	echo ""
 	if [[ "$(needNginx)" == "no" ]]; then
 		if [[ "$TLS" == "true" ]]; then
@@ -234,7 +231,6 @@ getData() {
 		colorEcho ${BLUE} " Nginx端口：$PORT"
 		XPORT=$(shuf -i10000-65000 -n1)
 	fi
-
 	if [[ "$KCP" == "true" ]]; then
 		echo ""
 		colorEcho $BLUE " 请选择伪装类型："
@@ -256,14 +252,12 @@ getData() {
 		colorEcho $BLUE " 伪装类型：$HEADER_TYPE"
 		SEED=$(cat /proc/sys/kernel/random/uuid)
 	fi
-
 	if [[ "$TROJAN" == "true" ]]; then
 		echo ""
 		read -p " 请设置trojan密码（不输则随机生成）:" PASSWORD
 		[[ -z "$PASSWORD" ]] && PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
 		colorEcho $BLUE " trojan密码：$PASSWORD"
 	fi
-
 	if [[ "$XTLS" == "true" ]]; then
 		echo ""
 		colorEcho $BLUE " 请选择流控模式:"
@@ -278,7 +272,6 @@ getData() {
 		esac
 		colorEcho $BLUE " 流控模式：$FLOW"
 	fi
-
 	if [[ "${WS}" == "true" ]]; then
 		echo ""
 		while true; do
@@ -298,7 +291,6 @@ getData() {
 		done
 		colorEcho ${BLUE} " ws路径：$WSPATH"
 	fi
-
 	if [[ "$TLS" == "true" || "$XTLS" == "true" ]]; then
 		echo ""
 		colorEcho $BLUE " 请选择伪装站类型:"
@@ -319,7 +311,7 @@ getData() {
 						index=$(shuf -i0-${len} -n1)
 						PROXY_URL=${SITES[$index]}
 						host=$(echo ${PROXY_URL} | cut -d/ -f3)
-						ip=$(curl -sm2 ipget.net/?ip=${host})
+						ip=$(curl -sm8 ipget.net/?ip=${host})
 						res=$(echo -n ${ip} | grep ${host})
 						if [[ "${res}" == "" ]]; then
 							echo "$ip $host" >>/etc/hosts
@@ -343,7 +335,6 @@ getData() {
 		fi
 		REMOTE_HOST=$(echo ${PROXY_URL} | cut -d/ -f3)
 		colorEcho $BLUE " 伪装网站：$PROXY_URL"
-
 		echo ""
 		colorEcho $BLUE "  是否允许搜索引擎爬取网站？[默认：不允许]"
 		echo "    y)允许，会有更多ip请求网站，但会消耗一些流量，vps流量充足情况下推荐使用"
@@ -358,7 +349,6 @@ getData() {
 		fi
 		colorEcho $BLUE " 允许搜索引擎：$ALLOW_SPIDER"
 	fi
-
 	echo ""
 	read -p " 是否安装BBR(默认安装)?[y/n]:" NEED_BBR
 	[[ -z "$NEED_BBR" ]] && NEED_BBR=y
@@ -686,7 +676,6 @@ installBBR() {
 		INSTALL_BBR=false
 		return
 	fi
-
 	echo "net.core.default_qdisc=fq" >>/etc/sysctl.conf
 	echo "net.ipv4.tcp_congestion_control=bbr" >>/etc/sysctl.conf
 	sysctl -p
@@ -696,7 +685,6 @@ installBBR() {
 		INSTALL_BBR=false
 		return
 	fi
-
 	colorEcho $BLUE " 安装BBR模块..."
 	if [[ "$PMT" == "yum" ]]; then
 		if [[ "$V6_PROXY" == "" ]]; then
@@ -1269,14 +1257,12 @@ install() {
 		colorEcho $RED " unzip安装失败，请检查网络"
 		exit 1
 	fi
-
 	installNginx
 	setFirewall
 	if [[ "$TLS" == "true" || "$XTLS" == "true" ]]; then
 		getCert
 	fi
 	configNginx
-
 	colorEcho $BLUE " 安装Xray..."
 	getVersion
 	RETVAL="$?"
@@ -1288,15 +1274,11 @@ install() {
 		colorEcho $BLUE " 安装Xray ${NEW_VER} ，架构$(archAffix)"
 		installXray
 	fi
-
 	configXray
-
 	setSelinux
 	installBBR
-
 	start
 	showInfo
-
 	bbrReboot
 }
 
@@ -1335,7 +1317,6 @@ uninstall() {
 		colorEcho $RED " Xray未安装，请先安装！"
 		return
 	fi
-
 	echo ""
 	read -p " 确定卸载Xray？[y/n]：" answer
 	if [[ "${answer,,}" == "y" ]]; then
@@ -1343,13 +1324,11 @@ uninstall() {
 		if [[ "$domain" == "" ]]; then
 			domain=$(grep serverName $CONFIG_FILE | cut -d: -f2 | tr -d \",' ')
 		fi
-
 		stop
 		systemctl disable xray
 		rm -rf /etc/systemd/system/xray.service
 		rm -rf /usr/local/bin/xray
 		rm -rf /usr/local/etc/xray
-
 		if [[ "$BT" == "false" ]]; then
 			systemctl disable nginx
 			$CMD_REMOVE nginx
@@ -1379,7 +1358,6 @@ start() {
 	startNginx
 	systemctl restart xray
 	sleep 2
-
 	port=$(grep port $CONFIG_FILE | head -n 1 | cut -d: -f2 | tr -d \",' ')
 	res=$(ss -nutlp | grep ${port} | grep -i xray)
 	if [[ "$res" == "" ]]; then
@@ -1401,7 +1379,6 @@ restart() {
 		colorEcho $RED " Xray未安装，请先安装！"
 		return
 	fi
-
 	stop
 	start
 }
@@ -1414,7 +1391,6 @@ getConfigFileInfo() {
 	trojan="false"
 	protocol="VMess"
 	kcp="false"
-
 	uid=$(grep id $CONFIG_FILE | head -n1 | cut -d: -f2 | tr -d \",' ')
 	alterid=$(grep alterId $CONFIG_FILE | cut -d: -f2 | tr -d \",' ')
 	network=$(grep network $CONFIG_FILE | tail -n1 | cut -d: -f2 | tr -d \",' ')
@@ -1441,7 +1417,6 @@ getConfigFileInfo() {
 		type=$(grep header -A 3 $CONFIG_FILE | grep 'type' | cut -d: -f2 | tr -d \",' ')
 		seed=$(grep seed $CONFIG_FILE | cut -d: -f2 | tr -d \",' ')
 	fi
-
 	vmess=$(grep vmess $CONFIG_FILE)
 	if [[ "$vmess" == "" ]]; then
 		trojan=$(grep trojan $CONFIG_FILE)
