@@ -33,6 +33,9 @@ checkwarp(){
 V6_PROXY=""
 IP=$(curl -s4m8 https://ip.gs)
 [[ "$?" != "0" ]] && IP=$(curl -s6m8 https://ip.gs) && V6_PROXY="https://gh-proxy-misakano7545.koyeb.app/"
+if [[ $V6_PROXY != "" ]]; then
+	echo -e nameserver 2a01:4f8:c2c:123f::1 > /etc/resolv.conf
+fi
 
 BT="false"
 NGINX_CONF_PATH="/etc/nginx/conf.d/"
@@ -48,7 +51,7 @@ KCP="false"
 
 checkSystem() {
 	result=$(id | awk '{print $1}')
-	[[ $result != "uid=0(root)" ]] && colorEcho $RED " 请以root身份执行该脚本" &&exit 1
+	[[ $EUID -ne 0 ]] && colorEcho $RED " 请以root身份执行该脚本" &&exit 1
 
 	res=$(which yum 2>/dev/null)
 	if [[ "$?" != "0" ]]; then
@@ -417,7 +420,6 @@ getCert() {
 			echo ${res}
 			exit 1
 		fi
-
 		$CMD_INSTALL socat openssl
 		if [[ "$PMT" == "yum" ]]; then
 			$CMD_INSTALL cronie
