@@ -203,7 +203,7 @@ getData() {
 			CERT_FILE="/usr/local/etc/xray/${DOMAIN}.pem"
 			KEY_FILE="/usr/local/etc/xray/${DOMAIN}.key"
 		else
-			resolve=$(curl ip.gs/?ip=${DOMAIN})
+			resolve=$(curl -sL ipget.net/?ip=${DOMAIN})
 			res=$(echo -n ${resolve} | grep ${IP})
 			if [[ -z "${res}" ]]; then
 				colorEcho ${BLUE} "${DOMAIN} 解析结果：${resolve}"
