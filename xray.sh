@@ -144,7 +144,7 @@ getVersion() {
 
 	if [[ $? -ne 0 ]] || [[ $NEW_VER == "" ]]; then
 		colorEcho $RED " 检查Xray版本信息失败，请检查网络"
-		return 2
+		return 3
 	elif [[ $RETVAL -ne 0 ]]; then
 		return 2
 	elif [[ $NEW_VER != $CUR_VER ]]; then
