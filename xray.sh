@@ -140,11 +140,11 @@ getVersion() {
 	RETVAL=$?
 	CUR_VER="$(normalizeVersion "$(echo "$VER" | head -n 1 | cut -d " " -f2)")"
 	TAG_URL="https://api.github.com/repos/XTLS/Xray-core/releases/latest"
-	NEW_VER="$(normalizeVersion "$(curl -s "${TAG_URL}" --connect-timeout 10 | grep 'tag_name' | cut -d\" -f4)")"
+	NEW_VER="$(normalizeVersion "$(curl -s "${TAG_URL}" --connect-timeout 50 | grep 'tag_name' | cut -d\" -f4)")"
 
 	if [[ $? -ne 0 ]] || [[ $NEW_VER == "" ]]; then
 		colorEcho $RED " 检查Xray版本信息失败，请检查网络"
-		return 3
+		return 2
 	elif [[ $RETVAL -ne 0 ]]; then
 		return 2
 	elif [[ $NEW_VER != $CUR_VER ]]; then
