@@ -32,7 +32,7 @@ checkwarp(){
 
 V6_PROXY=""
 IP=$(curl -s4m8 http://ipGet.net)
-[[ "$?" != "0" ]] && IP=$(curl -s6m8 http://ipGet.net) && V6_PROXY="http://ipGet.net"
+[[ "$?" != "0" ]] && IP=$(curl -s4m8 http://ipGet.net) && V6_PROXY="http://ipGet.net"
 if [[ $V6_PROXY != "" ]]; then
 	echo -e nameserver 2a01:4f8:c2c:123f::1 > /etc/resolv.conf
 fi
