@@ -436,9 +436,9 @@ getCert() {
 		~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
 		if [[ "$BT" == "false" ]]; then
 			if [ -n $V6_PROXY ]; then
-				~/.acme.sh/acme.sh --issue -d $DOMAIN --keylength ec-256 --pre-hook "systemctl stop nginx" --post-hook "systemctl start nginx" --standalone --listen-v6
+				~/.acme.sh/acme.sh --issue -d $DOMAIN --keylength ec-256 --pre-hook "systemctl stop nginx" --post-hook "systemctl restart nginx" --standalone --listen-v6
 			else
-				~/.acme.sh/acme.sh --issue -d $DOMAIN --keylength ec-256 --pre-hook "systemctl stop nginx" --post-hook "systemctl start nginx" --standalone
+				~/.acme.sh/acme.sh --issue -d $DOMAIN --keylength ec-256 --pre-hook "systemctl stop nginx" --post-hook "systemctl restart nginx" --standalone
 			fi
 		else
 			~/.acme.sh/acme.sh --issue -d $DOMAIN --keylength ec-256 --pre-hook "nginx -s stop || { echo -n ''; }" --post-hook "nginx -c /www/server/nginx/conf/nginx.conf || { echo -n ''; }" --standalone
@@ -452,7 +452,7 @@ getCert() {
 		~/.acme.sh/acme.sh --install-cert -d $DOMAIN --ecc \
 		--key-file $KEY_FILE \
 		--fullchain-file $CERT_FILE \
-		--reloadcmd "service nginx force-reload"
+		--reloadcmd "service nginx start"
 		[[ -f $CERT_FILE && -f $KEY_FILE ]] || {
 			colorEcho $RED " 获取证书失败，请截图到TG群反馈"
 			exit 1
